@@ -1,0 +1,236 @@
+
+
+
+from ursina import *
+from ursina.shaders import unlit_shader  # DŮLEŽITÉ!
+from ursina.prefabs.first_person_controller import FirstPersonController
+app = Ursina()
+
+# Hráč / kamera
+player = FirstPersonController()
+player.gravity = 0  # vypne gravitaci, takže nepadáš
+player.cursor.visible = True
+player.speed = 10  # rychlost pohybu
+
+window.color = color.rgb(200, 200, 210)
+
+def simple_house(position=(0,0,0), width=0, height=0, depth=0, wall_color=color.hex("#424242"), roof_color=color.hex("#321E1E")):
+    x, y, z = position
+    # Podlaha – volitelné
+    floor = Entity(model='cube', scale=(width, 0.1, depth), position=(x, y, z), color=color.dark_gray)
+    # Zdi
+    wall_thickness = 0.2
+    front = Entity(model='cube', scale=(width, height, wall_thickness), position=(x, y + height/2, z - depth/2), color=wall_color, collider='box')
+    back  = Entity(model='cube', scale=(width, height, wall_thickness), position=(x, y + height/2, z + depth/2), color=wall_color, collider='box')
+    left  = Entity(model='cube', scale=(wall_thickness, height, depth), position=(x - width/2, y + height/2, z), color=wall_color, collider='box')
+    right = Entity(model='cube', scale=(wall_thickness, height, depth), position=(x + width/2, y + height/2, z), color=wall_color, collider='box')
+    # Střecha – dva šikmé bloky
+    roof_height = 0.7
+    roof_left  = Entity(model='cube', scale=(width*0.8, wall_thickness, depth), position=(x+width/3, y + height*1.15 + roof_height/2, z),
+                        rotation=(0,0,30), color=roof_color)
+    roof_right = Entity(model='cube', scale=(width*0.8, wall_thickness, depth), position=(x-width/3, y + height*1.15 + roof_height/2, z),
+                        rotation=(0,0,-30), color=roof_color)
+    return [floor, front, back, left, right, roof_left, roof_right]
+def fence(start=(0, 0, 0), length=10, spacing=2):
+    x, y, z = start
+    height = 5
+    post_width = 0.1
+    bar_thickness = 0.1
+    bar_count = 12
+    parts = []
+    for i in range(length + 1):
+        px = x + i * spacing
+        # Svislý sloupek
+        post = Entity(model='cube', scale=(post_width, height, post_width),position=(px, y + height / 2, z),color=color.hex("#424242"), texture='white_cube',shader=unlit_shader, collider='box')
+        parts.append(post)
+        # Vodorovné tyče (ostnatý drát – pouze mezi sloupky)
+        if i < length:
+            for j in range(bar_count):
+                bar_y = y + height - 0.3 - j * 0.4
+                bar = Entity(model='cube', scale=(spacing - post_width, bar_thickness, bar_thickness),position=(px + spacing / 2, bar_y, z),color=color.hex("#424242"), texture='white_cube',shader=unlit_shader, collider='box')
+                parts.append(bar)
+    return parts
+def tower(position=(0, 0, 0)):
+    x, y, z = position
+    tower_height = 6
+    leg_distance = 1.5
+    leg_thickness = 0.2
+    cabin_size = 2.5
+    roof_thickness = 0.1
+    ladder_step_count = 10
+    ladder_spacing = tower_height / ladder_step_count
+
+    wood_color = color.hex('#4B3A2F')  # tmavé dřevo
+    cabin_color = color.hex('#2E2E2E')  # tmavě šedá
+    roof_color = color.hex('#1B1B1B')  # skoro černá
+    ladder_color = color.hex('#6F6F6F')  # kov/šedá
+    parts = []
+    # 4 nohy věže
+    for dx in [-leg_distance/2, leg_distance/2]:
+        for dz in [-leg_distance/2, leg_distance/2]:
+            leg = Entity(model='cube', scale=(leg_thickness, tower_height, leg_thickness),
+                         position=(x + dx, y + tower_height / 2, z + dz),
+                         color=wood_color, texture='white_cube', shader=unlit_shader, collider='box')
+            parts.append(leg)
+    # Podlaha kabiny
+    floor = Entity(model='cube', scale=(cabin_size, 0.1, cabin_size),
+                   position=(x, y + tower_height + 0.05, z),
+                   color=wood_color, texture='white_cube', shader=unlit_shader, collider='box')
+    parts.append(floor)
+    # Stěny kabiny (čtyři)
+    wall_thickness = 0.1
+    wall_height = 2
+    for dx, dz in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        wall = Entity(model='cube', scale=(cabin_size if dx == 0 else wall_thickness,wall_height,cabin_size if dz == 0 else wall_thickness),
+                      position=(x + dx * (cabin_size/2 - wall_thickness/2),y + tower_height + wall_height / 2,z + dz * (cabin_size/2 - wall_thickness/2)),
+                      color=cabin_color, texture='white_cube', shader=unlit_shader, collider='box')
+        parts.append(wall)
+    # Střecha
+    roof = Entity(model='cube', scale=(cabin_size + 0.3, roof_thickness, cabin_size + 0.3),position=(x, y + tower_height + wall_height + roof_thickness / 2, z),color=roof_color, texture='white_cube', shader=unlit_shader, collider='box')
+    parts.append(roof)
+    # Žebřík (na jedné straně – předek)
+    for i in range(ladder_step_count):
+        step_y = y + i * ladder_spacing + 0.2
+        step = Entity(model='cube', scale=(cabin_size - 0.3, 0.1, 0.05),position=(x, step_y, z - leg_distance/2 - 0.1),color=ladder_color, texture='white_cube', shader=unlit_shader, collider='box')
+        parts.append(step)
+    return parts
+def rails(start=(0, 0, 0), length=20, spacing=1.0):
+    x, y, z = start
+    sleeper_width = 1.8
+    sleeper_depth = 0.2
+    sleeper_thickness = 0.1
+    rail_height = 0.15
+    rail_width = 0.07
+    rail_spacing = 1.0
+    sleeper_color = color.hex('#4E3629')   # tmavé dřevo
+    rail_color = color.hex('#A0A0A0')      # světlý kov
+    parts = []
+    for i in range(length):
+        z_pos = z + i * spacing
+        # Pražec 
+        sleeper = Entity(model='cube',
+                         scale=(sleeper_width, sleeper_thickness, sleeper_depth),
+                         position=(x, y + sleeper_thickness / 2, z_pos),
+                         color=sleeper_color, shader=unlit_shader, texture='white_cube')
+        parts.append(sleeper)
+        # Levá kolejnice
+        left_rail = Entity(model='cube',
+                           scale=(rail_width, rail_height, spacing + 0.01),
+                           position=(x - rail_spacing / 2, y + sleeper_thickness + rail_height / 2, z_pos + spacing / 2 - spacing / 2),
+                           color=rail_color, shader=unlit_shader, texture='white_cube')
+        parts.append(left_rail)
+        # Pravá kolejnice
+        right_rail = Entity(model='cube',
+                            scale=(rail_width, rail_height, spacing + 0.01),
+                            position=(x + rail_spacing / 2, y + sleeper_thickness + rail_height / 2, z_pos + spacing / 2 - spacing / 2),
+                            color=rail_color, shader=unlit_shader, texture='white_cube')
+        parts.append(right_rail)
+    return parts
+
+def gate(position=(0, 0, 0)):
+    x, y, z = position
+
+    parts = []
+
+    # Rozměry
+    base_width = 30
+    base_depth = 6
+    base_height = 6
+    tower_height = 8    
+    tower_width = 7
+    gate_height = 5
+    gate_width_each = 2.5
+    gate_opening_width = gate_width_each * 2 + 0.2  # šířka díry mezi částmi
+
+    brick_color = color.hex('#4A2E1F')   # tmavě cihlová
+    roof_color = color.hex('#2A2A2A')    # tmavá střecha
+
+    # Levá část hlavní budovy (před dírou)
+    left_base = Entity(
+        model='cube',
+        scale=((base_width - gate_opening_width) / 2, base_height, base_depth),
+        position=(x - (gate_opening_width + (base_width - gate_opening_width) / 2) / 2,
+                  y + base_height / 2,
+                  z),
+        color=brick_color,
+        shader=unlit_shader
+    )
+    parts.append(left_base)
+
+    # Pravá část hlavní budovy (za dírou)
+    right_base = Entity(
+        model='cube',
+        scale=((base_width - gate_opening_width) / 2, base_height, base_depth),
+        position=(x + (gate_opening_width + (base_width - gate_opening_width) / 2) / 2,
+                  y + base_height / 2,
+                  z),
+        color=brick_color,
+        shader=unlit_shader
+    )
+    parts.append(right_base)
+
+    # Věž nad průjezdem (ponechána uprostřed)
+    tower = Entity(
+        model='cube',
+        scale=(tower_width, tower_height, base_depth),
+        position=(x, y + base_height + tower_height / 2 -1, z),
+        color=brick_color,
+        shader=unlit_shader
+    )
+    parts.append(tower)
+
+    # Šikmá střecha věže (2 části)
+    roof_y = y + base_height + tower_height -0.5
+    for side in (-1, 1):
+        roof = Entity(
+            model='cube',
+            scale=(tower_width -1.4, 0.2, base_depth),
+            position=(x + side * 2.4, roof_y, z),
+            rotation=(0, 0, side * 25),
+            color=roof_color,
+            shader=unlit_shader
+        )
+        parts.append(roof)
+
+    # Brána – dvoukřídlá kovová mříž
+    gate_thickness = 0.15
+    gate_segments = 7 # počet mříží v každém křídle
+
+    for side in (-1, 1):
+        for i in range(gate_segments):
+            bar = Entity(
+                model='cube',
+                scale=(gate_thickness, gate_height, gate_thickness),
+                position=(
+                    x + side * (gate_width_each / 2) + (i - gate_segments // 2) * 0.4,
+                    y + gate_height / 2,
+                    z
+                ),
+                color=color.hex('#333333'),
+                shader=unlit_shader
+            )
+            parts.append(bar)
+
+
+
+# Zeme
+ground = Entity(
+    model='plane',
+    scale=(1000, 1, 1000),
+    color=color.gray,
+    texture='white_cube',
+    texture_scale=(1000, 1000),
+    collider='box'
+)
+
+houses = []
+for i in range(2):
+    houses += simple_house(position=(i*20, 0, 20), width=8, height=4, depth=16)
+
+fence(start=(0, 0, -10), length=10, spacing=2)
+tower(position=(10, 0, -12))
+rails(start=(0, 0, -20), length=30, spacing=1)
+gate(position=(0, 0, -30))
+
+
+app.run()
