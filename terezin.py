@@ -8,7 +8,7 @@ app = Ursina()
 player = FirstPersonController()
 player.gravity = 0
 player.cursor.visible = True
-player.speed = 40
+player.speed = 30
 camera.clip_plane_far = 500 # Zvýšil jsem dohled, aby bylo vidět více, pokud výkon dovolí.
 
 # Zeme
@@ -358,7 +358,7 @@ def create_gate(position=(0, 0, 0)):
     
     return combined_gate
 
-def create_crematorium(position=(0,0,0), width=30, height=10, depth=20, 
+def create_crematorium(position=(0,0,0), width=25, height=10, depth=15, 
                        base_color=color.hex("#5C5C5C"), roof_color=color.hex("#303030"), 
                        chimney_color=color.hex("#404040"), rotation=(0,0,0)):
     
@@ -383,7 +383,7 @@ def create_crematorium(position=(0,0,0), width=30, height=10, depth=20,
 
     # Komín (vysoký a úzký, typicky umístěný vzadu nebo na boku)
     chimney_width = 3
-    chimney_height = 25
+    chimney_height = 15
     chimney_depth = 3
     crematorium_parts_to_combine.append(Entity(
         model='cube', 
@@ -471,11 +471,9 @@ world_elements.append(create_gate(position=(0, 0, 20)))
 # Ploty (X-směr)
 world_elements.append(create_fence_segment(start=(3.5, 0, 20), length=150 * 2, spacing=2, axis='x')) # Upravil jsem length
 world_elements.append(create_fence_segment(start=(-203.5, 0, 20), length=200 * 2, spacing=2, axis='x')) # Upravil jsem length
-# Ploty (Y-směr)
-world_elements.append(create_fence_segment(start=(320, 0, 20), length=50 * 2, spacing=2, axis='y')) # Upravil jsem length
 
 # Koleje
-world_elements.append(create_rails_segment(start=(0, 0, 0), length=200, spacing=1))
+world_elements.append(create_rails_segment(start=(0, 0, 0), length=350 , spacing=1))
 world_elements.append(create_rails_segment(start=(10, 0, 40), length=200, spacing=1))
 world_elements.append(create_rails_segment(start=(5, 0, 40), length=200, spacing=1))
 
@@ -507,9 +505,14 @@ for i in range(38):
         world_elements.append(create_simple_house(position=(pos_x + i * 15, 0, 95), width=8, height=3.5, depth=13))
 
 # Plot mezi Maďarským táborem a silnicí
-world_elements.append(create_fence_segment(start=(20, 0, 120), length=150 * 2, spacing=2, axis='x')) # Upravil jsem length
-world_elements.append(create_road_segment(position=(60, 0, 125), length=300, width=6, rotace=90)) # Používáme novou funkci
-world_elements.append(create_fence_segment(start=(20, 0, 130), length=150 * 2, spacing=2, axis='x')) # Upravil jsem length
+world_elements.append(create_fence_segment(start=(15, 0, 120), length=290, spacing=2, axis='x')) # Upravil jsem length
+world_elements.append(create_road_segment(position=(60, 0, 125), length=500, width=6, rotace=90)) # Používáme novou funkci
+world_elements.append(create_fence_segment(start=(15, 0, 130), length=290, spacing=2, axis='x')) # Upravil jsem length
+world_elements.append(create_fence_segment(start=(-210, 0, 120), length=130, spacing=2, axis='x')) # Upravil jsem length
+world_elements.append(create_fence_segment(start=(-210, 0, 130), length=130, spacing=2, axis='x')) # Upravil jsem length
+world_elements.append(create_fence_segment(start=(-70, 0, 120), length=60, spacing=2, axis='x')) # Upravil jsem length
+world_elements.append(create_fence_segment(start=(-70, 0, 130), length=60, spacing=2, axis='x')) # Upravil jsem length
+
 
 # Mužský tábor
 count_MUT = 0
@@ -536,7 +539,7 @@ world_elements.append(create_fence_segment(start=(20, 0, 200), length=150 * 2, s
 # Věž
 world_elements.append(create_tower(position=(10, 0, -20)))
 
-# ženský tabor
+# ženský tabor B1a
 count_ZT = 0
 count_ZT2=0
 for i in range(15):
@@ -547,8 +550,6 @@ for i in range(15):
         count_ZT2=count_ZT2+20
     count_ZT=count_ZT+1
     world_elements.append(create_simple_house(position=(pos_x-count_ZT2, 0, pos_y + count_ZT*15), width=8, height=3.5, depth=13, rotation=(0, 90, 0)))
-
-# ženský tabor2
 count_ZZT = 0
 count_ZZT2=0
 for i in range(25):
@@ -563,36 +564,58 @@ for i in range(25):
 world_elements.append(create_fence_segment(start=(-10, 0, 20), length=50 * 2, spacing=2, axis='y'))
 world_elements.append(create_fence_segment(start=(15, 0, 20), length=50 * 2, spacing=2, axis='y'))
 
-# ženský tabor B1B
-count_ZZTB = 0
-count_ZZT2B=0
-for i in range(12):
-    pos_x = -20
-    pos_y= 122
-    if i == 4 or i==8 or i ==12 :
-        count_ZZTB=0
-        count_ZZT2B=count_ZZT2B+20
-    count_ZZTB=count_ZZTB+1
-    world_elements.append(create_simple_house(position=(pos_x-count_ZZT2B, 0, pos_y + count_ZZTB*15), width=8, height=3.5, depth=13, rotation=(0, 90, 0)))
+#cesta mezi zenskými tabory:
+world_elements.append(create_fence_segment(start=(-70, 0, 20), length=50 * 2, spacing=2, axis='y')) # Upravil jsem length
+world_elements.append(create_road_segment(position=(-75, 0, 70), length=105, width=6, rotace=0)) # Používáme novou funkci
+world_elements.append(create_fence_segment(start=(-80, 0, 20), length=50 * 2, spacing=2, axis='y')) # Upravil jsem length
 
-# ženský tabor B1B2
-count_ZZTB3 = 0
-count_ZZT2B3=0
+world_elements.append(create_fence_segment(start=(-70, 0, 130), length=50 * 2, spacing=2, axis='y')) # Upravil jsem length
+world_elements.append(create_road_segment(position=(-75, 0, 175), length=100, width=6, rotace=0)) # Používáme novou funkci
+world_elements.append(create_fence_segment(start=(-80, 0, 130), length=50 * 2, spacing=2, axis='y')) 
+
+# ženský tabor B1b
+count_ZTb = 0
+count_ZT2b=0
+for i in range(15):
+    pos_x = -20
+    pos_y= 125
+    if i == 5 or i==10 or i ==15 :
+        count_ZTb=0
+        count_ZT2b=count_ZT2b+20
+    count_ZTb=count_ZTb+1
+    world_elements.append(create_simple_house(position=(pos_x-count_ZT2b, 0, pos_y + count_ZTb*15), width=8, height=3.5, depth=13, rotation=(0, 90, 0)))
+count_ZZTb = 0
+count_ZZT2b=0
 for i in range(25):
-    pos_x = -50
-    pos_y= 122
-    if i == 4 or i==8 or i ==12 :
-        count_ZZTB3=0
-        count_ZZT2B3=count_ZZT2B3+20
-    count_ZZTB3=count_ZZTB3+1
-    world_elements.append(create_simple_house(position=(pos_x-count_ZZT2B, 0, pos_y + count_ZZTB*15), width=8, height=3.5, depth=13, rotation=(0, 90, 0)))
+    pos_x = -90
+    pos_y= 125
+    if i == 5 or i==10 or i ==15 or i== 15 or i==20:
+        count_ZZTb=0
+        count_ZZT2b=count_ZZT2b+20
+    count_ZZTb=count_ZZTb+1
+    world_elements.append(create_simple_house(position=(pos_x-count_ZZT2b, 0, pos_y + count_ZZTb*15), width=8, height=3.5, depth=13, rotation=(0, 90, 0)))
+
+world_elements.append(create_fence_segment(start=(  15, 0, 130), length=50 * 2, spacing=2, axis='y'))
+world_elements.append(create_fence_segment(start=( -10, 0, 130), length=50 * 2, spacing=2, axis='y'))
 
 world_elements.append(create_fence_segment(start=(-10, 0, 20), length=50 * 2, spacing=2, axis='y'))
 world_elements.append(create_fence_segment(start=(15, 0, 20), length=50 * 2, spacing=2, axis='y'))
-
-
 world_elements.append(create_fence_segment(start=(-203.5, 0, 20), length=200 * 2, spacing=2, axis='y'))
 world_elements.append(create_fence_segment(start=(15, 0, 20), length=50 * 2, spacing=2, axis='x'))
+
+world_elements.append(create_fence_segment(start=(300, 0, 20), length=150 * 2, spacing=2, axis='y'))
+
+world_elements.append(create_fence_segment(start=(-200, 0, 230), length=190, spacing=2, axis='x'))
+world_elements.append(create_fence_segment(start=(15, 0, 230), length=185, spacing=2, axis='x'))
+
+world_elements.append(create_fence_segment(start=(-10, 0, 230), length=50, spacing=2, axis='y'))
+world_elements.append(create_fence_segment(start=(15, 0, 230), length=50, spacing=2, axis='y'))
+world_elements.append(create_crematorium(position=(-35, 0, 250)))
+world_elements.append(create_crematorium(position=(60, 0, 250)))
+world_elements.append(create_fence_segment(start=(-70, 0, 280), length=60, spacing=2, axis='x'))
+world_elements.append(create_fence_segment(start=(15, 0, 280), length=60, spacing=2, axis='x'))
+world_elements.append(create_fence_segment(start=(-70, 0, 230), length=50, spacing=2, axis='y'))
+world_elements.append(create_fence_segment(start=(75, 0, 230), length=50, spacing=2, axis='y'))
 
 
 # --- Sloučení všech statických prvků do jedné hlavní entity ---
