@@ -1,0 +1,1 @@
+Abych prošel dějak na GJK tak jsem byl donucen provest nejáký celoroční projekt. Toto je 3D frst person simulace nedokončeného auchvitzu, přotože jsem linej. Puvodně to měla být hra ale lidem to bhužel přišlo urážlivý, tak sry. 
